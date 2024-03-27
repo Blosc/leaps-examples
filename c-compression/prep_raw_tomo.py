@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # Export Blosc2 n-dimensional array in `SRC_TOMOGRAPHY_PATH`
 # to uncompressed dataset ``DST_TOMOGRAPHY_PATH:/tomo``
 # with reduced resolution and one image per chunk.
