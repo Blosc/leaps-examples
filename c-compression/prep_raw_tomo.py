@@ -4,13 +4,19 @@
 # with reduced resolution and one image per chunk.
 
 import math
+import sys
 
 import blosc2
 import h5py
 
 
-SRC_TOMOGRAPHY_PATH = '../data/lung_raw_slice.b2nd'
-DST_TOMOGRAPHY_PATH = 'tomo-raw.h5'
+if len(sys.argv) < 3:
+    print(f"Usage: {sys.argv[0]} INPUT_B2ND OUTPUT_HDF5", file=sys.stderr)
+    sys.exit(1)
+
+
+SRC_TOMOGRAPHY_PATH = sys.argv[1]
+DST_TOMOGRAPHY_PATH = sys.argv[2]
 DST_TOMOGRAPHY_NAME = 'tomo'
 SHRINK = 2  # half the resolution
 
