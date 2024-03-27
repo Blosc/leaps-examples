@@ -1,7 +1,7 @@
 PY_VENV := VENV
 PY := $(PY_VENV)/bin/python
 
-OUT := $(PY_VENV) tomo-raw.h5
+OUT := $(PY_VENV) tomo-raw.h5 compress-tomo
 
 
 .PHONY:	all clean
@@ -15,6 +15,9 @@ $(PY_VENV):
 
 tomo-raw.h5:	prep_raw_tomo.py ../data/lung_raw_slice.b2nd
 	$(PY) $^ $@
+
+compress-tomo:	compress-tomo.c
+	$(CC) -I$(PY_VENV)/include -L$(PY_VENV)/lib -lblosc2 -o $@ $<
 
 clean:
 	rm -rf $(OUT)
