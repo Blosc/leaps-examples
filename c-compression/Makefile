@@ -1,10 +1,12 @@
 PY_VENV := VENV
 PY := $(PY_VENV)/bin/python
 
+OUT := $(PY_VENV) tomo-raw.h5
+
 
 .PHONY:	all clean
 
-all:	$(PY_VENV) tomo-raw.h5
+all:	$(OUT)
 
 $(PY_VENV):
 	mkdir $(PY_VENV)
@@ -15,4 +17,4 @@ tomo-raw.h5:	prep_raw_tomo.py ../data/lung_raw_slice.b2nd
 	$(PY) $^ $@
 
 clean:
-	rm -rf $(PY_VENV) tomo-raw.h5
+	rm -rf $(OUT)
