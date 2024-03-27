@@ -8,6 +8,9 @@ OUT := $(PY_VENV) tomo-raw.h5 compress-tomo tomo.h5
 
 all:	$(OUT)
 
+# The Python virtual environment is used for
+# (i) installing the dependencies of the raw tomo prep script, and
+# (ii) installing the Blosc2 Grok plugin to access its C headers & libraries.
 $(PY_VENV):
 	mkdir $(PY_VENV)
 	python3 -m venv $(PY_VENV)
