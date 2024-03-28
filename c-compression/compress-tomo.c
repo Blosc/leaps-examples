@@ -14,7 +14,7 @@ int main(int argc, const char* argv[]) {
   if (argc < 3) {
     fprintf(stderr, "Usage: %s INPUT_HDF5 OUTPUT_HDF5\n", argv[0]);
     status = EXIT_FAILURE;
-    goto out;
+    goto err_parse_args;
   }
 
   const char* src_h5file_path = argv[1];
@@ -31,14 +31,14 @@ int main(int argc, const char* argv[]) {
   src_h5file_id = H5Fopen(src_h5file_path, H5F_ACC_RDONLY, H5P_DEFAULT);
   if (src_h5file_id < 0) {
     status = EXIT_FAILURE;
-    goto out_uninit;
+    goto err_open_srcf;
   }
 
   hid_t src_h5dset_id;
   src_h5dset_id = H5Dopen2(src_h5file_id, SRC_TOMOGRAPHY_NAME, H5P_DEFAULT);
   if (src_h5file_id < 0) {
     status = EXIT_FAILURE;
-    goto out_close_srcf;
+    goto err_open_srcds;
   }
 
   // Create output file
@@ -46,7 +46,7 @@ int main(int argc, const char* argv[]) {
   dst_h5file_id = H5Fcreate(dst_h5file_path, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
   if (dst_h5file_id < 0) {
     status = EXIT_FAILURE;
-    goto out_close_srcds;
+    goto err_open_dstf;
   }
 
   grk_cparameters grok_cparams;
@@ -54,18 +54,17 @@ int main(int argc, const char* argv[]) {
   grok_cparams.cod_format = GRK_FMT_JP2;
 
   // Cleanup
-  out_close_dstf:
   H5Fclose(dst_h5file_id);
 
-  out_close_srcds:
+  err_open_dstf:
   H5Dclose(src_h5dset_id);
-  out_close_srcf:
+  err_open_srcds:
   H5Fclose(src_h5file_id);
 
-  out_uninit:
+  err_open_srcf:
   blosc2_grok_destroy();
   blosc2_destroy();
 
-  out:
+  err_parse_args:
   return status;
 }
