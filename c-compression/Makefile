@@ -22,11 +22,11 @@ tomo-raw.h5:	prep_raw_tomo.py ../data/lung_raw_slice.b2nd
 compress-tomo tomo.h5:	PY_SITE=$(dir $(shell $(PY) -c 'import blosc2; print(blosc2.__path__[0])'))
 
 compress-tomo:	compress-tomo.c
-	$(CC) -I$(PY_VENV)/include -L$(PY_VENV)/lib -lblosc2 \
-	      -I$(wildcard $(PY_SITE)/include/grok-*) -L$(PY_SITE)/lib64 -lgrokj2k \
+	$(CC) -o $@ $< \
 	      -I$(PY_SITE)/include -L$(PY_SITE)/blosc2_grok -lblosc2_grok \
-	      -lhdf5 \
-	      -o $@ $<
+	      -I$(PY_VENV)/include -L$(PY_VENV)/lib -lblosc2 \
+	      -I$(wildcard $(PY_SITE)/include/grok-*) -L$(PY_SITE)/lib64 -lgrokj2k -lstdc++ \
+	      -lhdf5
 
 tomo.h5:	compress-tomo tomo-raw.h5
 	env LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):$(PY_VENV)/lib:$(PY_SITE)/blosc2_grok ./$^ $@
