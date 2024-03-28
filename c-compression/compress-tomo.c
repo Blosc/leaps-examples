@@ -15,6 +15,7 @@ int main(int argc, const char* argv[]) {
     goto out;
   }
 
+  const char* src_h5file_path = argv[1];
   const char* dst_h5file_path = argv[2];
 
   // Initialize libraries
@@ -23,12 +24,20 @@ int main(int argc, const char* argv[]) {
 
   printf("Blosc2 %s\n", blosc2_get_version_string());
 
+  // Open input file
+  hid_t src_h5file_id;
+  src_h5file_id = H5Fopen(src_h5file_path, H5F_ACC_RDONLY, H5P_DEFAULT);
+  if (src_h5file_id < 0) {
+    status = EXIT_FAILURE;
+    goto out_uninit;
+  }
+
   // Create output file
   hid_t dst_h5file_id;
   dst_h5file_id = H5Fcreate(dst_h5file_path, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
   if (dst_h5file_id < 0) {
     status = EXIT_FAILURE;
-    goto out_uninit;
+    goto out_close_srcf;
   }
 
   grk_cparameters grok_cparams;
@@ -38,6 +47,9 @@ int main(int argc, const char* argv[]) {
   // Cleanup
   out_close_dstf:
   H5Fclose(dst_h5file_id);
+
+  out_close_srcf:
+  H5Fclose(src_h5file_id);
 
   out_uninit:
   blosc2_grok_destroy();
