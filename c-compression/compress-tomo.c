@@ -37,6 +37,18 @@ int main(int argc, const char* argv[]) {
   CHKPOS(src_h5dset_id = H5Dopen2(src_h5file_id, SRC_TOMOGRAPHY_NAME, H5P_DEFAULT),
          err_open_srcds);
 
+  hid_t src_h5dssp_id;
+  CHKPOS(src_h5dssp_id = H5Dget_space(src_h5dset_id),
+         err_open_srcdssp);
+  int dset_rank;
+  hsize_t dset_shape[H5S_MAX_RANK];
+  CHKPOS(dset_rank = H5Sget_simple_extent_dims(src_h5dssp_id, dset_shape, NULL),
+         err_check_srcdssp);
+  if (dset_rank != 3) {
+    fprintf(stderr, "source tomography must have 3 dimensions, not %d\n", dset_rank);
+    FAIL(err_check_srcdssp);
+  }
+
   // Create output file
   hid_t dst_h5file_id;
   CHKPOS(dst_h5file_id = H5Fcreate(dst_h5file_path, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT),
@@ -50,6 +62,9 @@ int main(int argc, const char* argv[]) {
   H5Fclose(dst_h5file_id);
 
   err_open_dstf:
+  err_check_srcdssp:
+  H5Sclose(src_h5dssp_id);
+  err_open_srcdssp:
   H5Dclose(src_h5dset_id);
   err_open_srcds:
   H5Fclose(src_h5file_id);
