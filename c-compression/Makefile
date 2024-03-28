@@ -25,6 +25,7 @@ compress-tomo:	compress-tomo.c
 	$(CC) -I$(PY_VENV)/include -L$(PY_VENV)/lib -lblosc2 \
 	      -I$(wildcard $(PY_SITE)/include/grok-*) -L$(PY_SITE)/lib64 -lgrokj2k \
 	      -I$(PY_SITE)/include -L$(PY_SITE)/blosc2_grok -lblosc2_grok \
+	      -lhdf5 \
 	      -o $@ $<
 
 tomo.h5:	compress-tomo tomo-raw.h5

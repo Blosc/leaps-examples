@@ -3,12 +3,24 @@
 #include <blosc2.h>
 #include <blosc2_grok.h>
 #include <grok.h>
+#include <hdf5.h>
 
-int main(void) {
+int main(int argc, const char* argv[]) {
+  if (argc < 3) {
+    fprintf(stderr, "Usage: %s INPUT_HDF5 OUTPUT_HDF5\n", argv[0]);
+    exit(1);
+  }
+
+  const char* dst_h5file_path = argv[2];
+
   blosc2_init();
   blosc2_grok_init(0, true);
 
   printf("Blosc2 %s\n", blosc2_get_version_string());
+
+  hid_t dst_h5file_id;
+  dst_h5file_id = H5Fcreate(dst_h5file_path, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+  H5Fclose(dst_h5file_id);
 
   grk_cparameters grok_cparams;
   grk_compress_set_default_params(&grok_cparams);
