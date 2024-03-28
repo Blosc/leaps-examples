@@ -5,6 +5,8 @@
 #include <grok.h>
 #include <hdf5.h>
 
+#define SRC_TOMOGRAPHY_NAME "/tomo"
+
 int main(int argc, const char* argv[]) {
   int status = EXIT_SUCCESS;
 
@@ -24,7 +26,7 @@ int main(int argc, const char* argv[]) {
 
   printf("Blosc2 %s\n", blosc2_get_version_string());
 
-  // Open input file
+  // Open input dataset
   hid_t src_h5file_id;
   src_h5file_id = H5Fopen(src_h5file_path, H5F_ACC_RDONLY, H5P_DEFAULT);
   if (src_h5file_id < 0) {
@@ -32,12 +34,19 @@ int main(int argc, const char* argv[]) {
     goto out_uninit;
   }
 
+  hid_t src_h5dset_id;
+  src_h5dset_id = H5Dopen2(src_h5file_id, SRC_TOMOGRAPHY_NAME, H5P_DEFAULT);
+  if (src_h5file_id < 0) {
+    status = EXIT_FAILURE;
+    goto out_close_srcf;
+  }
+
   // Create output file
   hid_t dst_h5file_id;
   dst_h5file_id = H5Fcreate(dst_h5file_path, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
   if (dst_h5file_id < 0) {
     status = EXIT_FAILURE;
-    goto out_close_srcf;
+    goto out_close_srcds;
   }
 
   grk_cparameters grok_cparams;
@@ -48,6 +57,8 @@ int main(int argc, const char* argv[]) {
   out_close_dstf:
   H5Fclose(dst_h5file_id);
 
+  out_close_srcds:
+  H5Dclose(src_h5dset_id);
   out_close_srcf:
   H5Fclose(src_h5file_id);
 
