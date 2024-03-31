@@ -1,11 +1,16 @@
 #include <stdio.h>
 
 #include <blosc2.h>
+#include <blosc2/codecs-registry.h>
 #include <blosc2_grok.h>
 #include <grok.h>
 #include <hdf5.h>
 
 #define TOMOGRAPHY_NAME "/tomo"
+
+/* Filter ID registered with the HDF Group, */
+/* see <https://portal.hdfgroup.org/documentation/hdf5-docs/registered_filter_plugins.html>. */
+#define FILTER_BLOSC2 32026
 
 #define FAIL(_LABEL) { status = EXIT_FAILURE; goto _LABEL; }
 #define CHKPOS(_EXPR, _LABEL) { if ((_EXPR) < 0) FAIL(_LABEL) }
@@ -60,11 +65,24 @@ int main(int argc, const char* argv[]) {
   CHKPOS(H5Pset_chunk(dst_h5plst_id, 3, dst_chunk_shape),
          err_conf_dstpl);
 
+  size_t dset_type_size = H5Tget_size(dset_h5type_id);
+  size_t chunk_size = (dst_chunk_shape[0] * dst_chunk_shape[1] * dst_chunk_shape[2]
+                       * dset_type_size);
+  // These compression parameters for filter are mostly descriptive,
+  // as the compression will be done manually.
+  int cd_values[8 + 3] = {
+    1 /* filter rev */,
+    chunk_size /* block size (1 per chunk) */, dset_type_size, chunk_size,
+    5 /* comp level (ign) */, 0 /* shuffle (ign) */, BLOSC_CODEC_GROK,
+    dset_rank,
+    dst_chunk_shape[0], dst_chunk_shape[1], dst_chunk_shape[2],
+  };
+  CHKPOS(H5Pset_filter(dst_h5plst_id, FILTER_BLOSC2, H5Z_FLAG_OPTIONAL, 8 + 3, cd_values),
+         err_conf_dstpl);
+
   grk_cparameters grok_cparams;
   grk_compress_set_default_params(&grok_cparams);
   grok_cparams.cod_format = GRK_FMT_JP2;
-
-  // TODO: configure compression in property list
 
   hid_t dst_h5dssp_id;
   CHKPOS(dst_h5dssp_id = H5Screate_simple(dset_rank, dset_shape, NULL),
@@ -81,8 +99,7 @@ int main(int argc, const char* argv[]) {
 
   // Read and write individual images
   uint8_t *chunk_data;
-  chunk_data = malloc(dst_chunk_shape[0] * dst_chunk_shape[1] * dst_chunk_shape[2]
-                      * H5Tget_size(dset_h5type_id));
+  chunk_data = malloc(chunk_size);
   if (!chunk_data) {
     fprintf(stderr, "failed to allocate chunk memory\n");
     FAIL(err_alloc_chunk);
