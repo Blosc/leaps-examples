@@ -80,10 +80,6 @@ int main(int argc, const char* argv[]) {
   CHKPOS(H5Pset_filter(dst_h5plst_id, FILTER_BLOSC2, H5Z_FLAG_OPTIONAL, 8 + 3, cd_values),
          err_conf_dstpl);
 
-  grk_cparameters grok_cparams;
-  grk_compress_set_default_params(&grok_cparams);
-  grok_cparams.cod_format = GRK_FMT_JP2;
-
   hid_t dst_h5dssp_id;
   CHKPOS(dst_h5dssp_id = H5Screate_simple(dset_rank, dset_shape, NULL),
          err_make_dstsp);
@@ -96,6 +92,36 @@ int main(int argc, const char* argv[]) {
   CHKPOS(dst_h5dset_id = H5Dcreate2(dst_h5file_id, TOMOGRAPHY_NAME, dset_h5type_id, dst_h5dssp_id,
                                     H5P_DEFAULT, dst_h5plst_id, H5P_DEFAULT),
          err_make_dstds);
+
+  // Prepare compression parameters for individual chunks
+  blosc2_grok_params b2gk_params = {0};
+  grk_compress_set_default_params(&(b2gk_params.compressParams));
+  b2gk_params.compressParams.cod_format = GRK_FMT_JP2;
+  grk_set_default_stream_params(&(b2gk_params.streamParams));
+
+  blosc2_cparams b2_cparams = BLOSC2_CPARAMS_DEFAULTS;
+  b2_cparams.compcode = BLOSC_CODEC_GROK;
+  b2_cparams.typesize = dset_type_size;
+  for (int i = 0; i < BLOSC2_MAX_FILTERS; i++)
+    b2_cparams.filters[i] = 0;
+  b2_cparams.codec_params = &b2gk_params;
+  blosc2_dparams b2_dparams = BLOSC2_DPARAMS_DEFAULTS;
+  b2_dparams.nthreads = 1;
+
+  blosc2_storage b2_storage = {.cparams = &b2_cparams, .dparams = &b2_dparams};
+
+  b2nd_context_t *chunk_b2ctx;
+  {
+    // We will be maping each HDF5 chunks maps to a B2ND array of 1 chunk with 1 block.
+    int32_t chunk_b2shape[] = {dst_chunk_shape[0], dst_chunk_shape[1],dst_chunk_shape[2]};
+    chunk_b2ctx = b2nd_create_ctx(&b2_storage, dset_rank, dst_chunk_shape /* shape */,
+                                  chunk_b2shape /* chunk */, chunk_b2shape /* block */,
+                                  NULL, 0, NULL, 0);
+  }
+  if (!chunk_b2ctx) {
+    fprintf(stderr, "failed to create chunk B2ND context\n");
+    FAIL(err_make_b2ctx);
+  }
 
   // Read and write individual images
   uint8_t *chunk_data;
@@ -130,6 +156,9 @@ int main(int argc, const char* argv[]) {
   err_make_memsp:
   free(chunk_data);
   err_alloc_chunk:
+
+  b2nd_free_ctx(chunk_b2ctx);
+  err_make_b2ctx:
 
   H5Dclose(dst_h5dset_id);
   err_make_dstds:
