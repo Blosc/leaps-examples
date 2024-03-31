@@ -48,6 +48,9 @@ int main(int argc, const char* argv[]) {
     fprintf(stderr, "source tomography must have 3 dimensions, not %d\n", dset_rank);
     FAIL(err_check_srcdssp);
   }
+  hid_t dset_h5type_id;
+  CHKPOS(dset_h5type_id = H5Dget_type(src_h5dset_id),
+         err_open_srcdsty);
 
   // Create output file
   hid_t dst_h5file_id;
@@ -62,6 +65,8 @@ int main(int argc, const char* argv[]) {
   H5Fclose(dst_h5file_id);
 
   err_open_dstf:
+  H5Tclose(dset_h5type_id);
+  err_open_srcdsty:
   err_check_srcdssp:
   H5Sclose(src_h5dssp_id);
   err_open_srcdssp:
