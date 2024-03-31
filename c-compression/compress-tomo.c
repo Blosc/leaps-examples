@@ -133,8 +133,14 @@ int main(int argc, const char* argv[]) {
   hid_t mem_h5cksp_id;
   CHKPOS(mem_h5cksp_id = H5Screate_simple(dset_rank, dst_chunk_shape, NULL),
          err_make_memsp);
+  b2nd_array_t *chunk_b2arr;  // to be overwritten with each image
+  if (b2nd_uninit(chunk_b2ctx, &chunk_b2arr) < 0) {
+    fprintf(stderr, "failed to create B2ND array\n");
+    FAIL(err_make_b2arr);
+  }
 
   hsize_t chunk_offset[] = {0, 0, 0};
+  const int64_t chunk_start[] = {0, 0, 0};
   for (int i = 0; i < dset_shape[0]; i++) {
     chunk_offset[0] = i;
     if (H5Sselect_hyperslab(src_h5dssp_id, H5S_SELECT_SET,
@@ -147,11 +153,19 @@ int main(int argc, const char* argv[]) {
       fprintf(stderr, "failed to read image #%d\n", i);
       FAIL(err_read_image);
     }
+    if (b2nd_set_slice_cbuffer(chunk_data, dst_chunk_shape, chunk_size,
+                               chunk_start, dst_chunk_shape,
+                               chunk_b2arr) < 0) {
+      fprintf(stderr, "failed to compress image #%d\n", i);
+      FAIL(err_read_image);
+    }
     // TOOD: write
   }
 
   // Cleanup
   err_read_image:
+  b2nd_free(chunk_b2arr);
+  err_make_b2arr:
   H5Sclose(mem_h5cksp_id);
   err_make_memsp:
   free(chunk_data);
