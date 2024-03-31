@@ -159,7 +159,16 @@ int main(int argc, const char* argv[]) {
       fprintf(stderr, "failed to compress image #%d\n", i);
       FAIL(err_read_image);
     }
+    uint8_t *cframe;
+    int64_t cframe_size;
+    bool free_cframe;
+    if (b2nd_to_cframe(chunk_b2arr, &cframe, &cframe_size, &free_cframe) < 0) {
+      fprintf(stderr, "failed to serialize compressed image #%d\n", i);
+      FAIL(err_read_image);
+    }
     // TOOD: write
+    if (free_cframe)
+      free(cframe);
   }
 
   // Cleanup
