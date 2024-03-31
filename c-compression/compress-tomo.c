@@ -79,7 +79,41 @@ int main(int argc, const char* argv[]) {
                                     H5P_DEFAULT, dst_h5plst_id, H5P_DEFAULT),
          err_make_dstds);
 
+  // Read and write individual images
+  uint8_t *chunk_data;
+  chunk_data = malloc(dst_chunk_shape[0] * dst_chunk_shape[1] * dst_chunk_shape[2]
+                      * H5Tget_size(dset_h5type_id));
+  if (!chunk_data) {
+    fprintf(stderr, "failed to allocate chunk memory\n");
+    FAIL(err_alloc_chunk);
+  }
+  hid_t mem_h5cksp_id;
+  CHKPOS(mem_h5cksp_id = H5Screate_simple(dset_rank, dst_chunk_shape, NULL),
+         err_make_memsp);
+
+  hsize_t chunk_offset[] = {0, 0, 0};
+  for (int i = 0; i < dset_shape[0]; i++) {
+    chunk_offset[0] = i;
+    if (H5Sselect_hyperslab(src_h5dssp_id, H5S_SELECT_SET,
+                            chunk_offset, NULL, dst_chunk_shape, NULL) < 0) {
+      fprintf(stderr, "failed to select image #%d\n", i);
+      FAIL(err_read_image);
+    }
+    if (H5Dread(src_h5dset_id, dset_h5type_id, mem_h5cksp_id, src_h5dssp_id,
+                H5P_DEFAULT, chunk_data) < 0) {
+      fprintf(stderr, "failed to read image #%d\n", i);
+      FAIL(err_read_image);
+    }
+    // TOOD: write
+  }
+
   // Cleanup
+  err_read_image:
+  H5Sclose(mem_h5cksp_id);
+  err_make_memsp:
+  free(chunk_data);
+  err_alloc_chunk:
+
   H5Dclose(dst_h5dset_id);
   err_make_dstds:
   H5Fclose(dst_h5file_id);
