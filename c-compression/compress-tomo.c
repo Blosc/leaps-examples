@@ -5,7 +5,7 @@
 #include <grok.h>
 #include <hdf5.h>
 
-#define SRC_TOMOGRAPHY_NAME "/tomo"
+#define TOMOGRAPHY_NAME "/tomo"
 
 #define FAIL(_LABEL) { status = EXIT_FAILURE; goto _LABEL; }
 #define CHKPOS(_EXPR, _LABEL) { if ((_EXPR) < 0) FAIL(_LABEL) }
@@ -34,7 +34,7 @@ int main(int argc, const char* argv[]) {
          err_open_srcf);
 
   hid_t src_h5dset_id;
-  CHKPOS(src_h5dset_id = H5Dopen2(src_h5file_id, SRC_TOMOGRAPHY_NAME, H5P_DEFAULT),
+  CHKPOS(src_h5dset_id = H5Dopen2(src_h5file_id, TOMOGRAPHY_NAME, H5P_DEFAULT),
          err_open_srcds);
 
   hid_t src_h5dssp_id;
@@ -74,7 +74,14 @@ int main(int argc, const char* argv[]) {
   CHKPOS(dst_h5file_id = H5Fcreate(dst_h5file_path, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT),
          err_make_dstf);
 
+  hid_t dst_h5dset_id;
+  CHKPOS(dst_h5dset_id = H5Dcreate2(dst_h5file_id, TOMOGRAPHY_NAME, dset_h5type_id, dst_h5dssp_id,
+                                    H5P_DEFAULT, dst_h5plst_id, H5P_DEFAULT),
+         err_make_dstds);
+
   // Cleanup
+  H5Dclose(dst_h5dset_id);
+  err_make_dstds:
   H5Fclose(dst_h5file_id);
   err_make_dstf:
   H5Sclose(dst_h5dssp_id);
