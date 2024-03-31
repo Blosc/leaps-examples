@@ -166,9 +166,14 @@ int main(int argc, const char* argv[]) {
       fprintf(stderr, "failed to serialize compressed image #%d\n", i);
       FAIL(err_read_image);
     }
-    // TOOD: write
+    herr_t status = H5Dwrite_chunk(dst_h5dset_id, H5P_DEFAULT, 0,
+                                   chunk_start, (size_t)(cframe_size), cframe);
     if (free_cframe)
       free(cframe);
+    if (status < 0) {
+      fprintf(stderr, "failed to write compressed chunk for image #%d\n", i);
+      FAIL(err_read_image);
+    }
   }
 
   // Cleanup
