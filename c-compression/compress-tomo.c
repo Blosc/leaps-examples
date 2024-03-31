@@ -53,10 +53,6 @@ int main(int argc, const char* argv[]) {
          err_open_srcdsty);
 
   // Create output dataset
-  hid_t dst_h5file_id;
-  CHKPOS(dst_h5file_id = H5Fcreate(dst_h5file_path, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT),
-         err_open_dstf);
-
   hid_t dst_h5plst_id;
   CHKPOS(dst_h5plst_id = H5Pcreate(H5P_DATASET_CREATE),
          err_make_dstpl);
@@ -74,15 +70,19 @@ int main(int argc, const char* argv[]) {
   CHKPOS(dst_h5dssp_id = H5Screate_simple(dset_rank, dset_shape, NULL),
          err_make_dstsp);
 
+  hid_t dst_h5file_id;
+  CHKPOS(dst_h5file_id = H5Fcreate(dst_h5file_path, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT),
+         err_make_dstf);
+
   // Cleanup
+  H5Fclose(dst_h5file_id);
+  err_make_dstf:
   H5Sclose(dst_h5dssp_id);
   err_make_dstsp:
   err_conf_dstpl:
   H5Pclose(dst_h5plst_id);
   err_make_dstpl:
-  H5Fclose(dst_h5file_id);
 
-  err_open_dstf:
   H5Tclose(dset_h5type_id);
   err_open_srcdsty:
   err_check_srcdssp:
@@ -91,8 +91,8 @@ int main(int argc, const char* argv[]) {
   H5Dclose(src_h5dset_id);
   err_open_srcds:
   H5Fclose(src_h5file_id);
-
   err_open_srcf:
+
   blosc2_grok_destroy();
   blosc2_destroy();
 
