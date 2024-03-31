@@ -28,6 +28,7 @@ compress-tomo:	compress-tomo.c
 	      -I$(wildcard $(PY_SITE)/include/grok-*) -L$(PY_SITE)/lib64 -lgrokj2k -lstdc++ \
 	      -lhdf5
 
+# TODO: Fix Python interpreter path.
 tomo.h5:	compress-tomo tomo-raw.h5
 	env LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):$(PY_VENV)/lib:$(PY_SITE)/blosc2_grok ./$^ $@
 
