@@ -52,16 +52,34 @@ int main(int argc, const char* argv[]) {
   CHKPOS(dset_h5type_id = H5Dget_type(src_h5dset_id),
          err_open_srcdsty);
 
-  // Create output file
+  // Create output dataset
   hid_t dst_h5file_id;
   CHKPOS(dst_h5file_id = H5Fcreate(dst_h5file_path, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT),
          err_open_dstf);
+
+  hid_t dst_h5plst_id;
+  CHKPOS(dst_h5plst_id = H5Pcreate(H5P_DATASET_CREATE),
+         err_make_dstpl);
+  hsize_t dst_chunk_shape[] = {1, dset_shape[1], dset_shape[2]};  // one 2D image per chunk
+  CHKPOS(H5Pset_chunk(dst_h5plst_id, 3, dst_chunk_shape),
+         err_conf_dstpl);
 
   grk_cparameters grok_cparams;
   grk_compress_set_default_params(&grok_cparams);
   grok_cparams.cod_format = GRK_FMT_JP2;
 
+  // TODO: configure compression in property list
+
+  hid_t dst_h5dssp_id;
+  CHKPOS(dst_h5dssp_id = H5Screate_simple(dset_rank, dset_shape, NULL),
+         err_make_dstsp);
+
   // Cleanup
+  H5Sclose(dst_h5dssp_id);
+  err_make_dstsp:
+  err_conf_dstpl:
+  H5Pclose(dst_h5plst_id);
+  err_make_dstpl:
   H5Fclose(dst_h5file_id);
 
   err_open_dstf:
