@@ -31,7 +31,7 @@ compress-tomo:	compress-tomo.c
 # The environment's Python needs to be found first since
 # Blosc2 executes it to find the location of the plugin library.
 tomo.h5:	compress-tomo tomo-raw.h5
-	env LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):$(PY_VENV)/lib:$(PY_SITE)/blosc2_grok \
+	env LD_LIBRARY_PATH=$(PY_VENV)/lib:$(PY_SITE)/blosc2_grok:$(LD_LIBRARY_PATH) \
 	    PATH=$(PY_VENV)/bin:$(PATH) \
 	    ./$^ $@
 
