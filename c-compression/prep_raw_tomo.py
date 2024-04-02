@@ -19,6 +19,7 @@ SRC_TOMOGRAPHY_PATH = sys.argv[1]
 DST_TOMOGRAPHY_PATH = sys.argv[2]
 DST_TOMOGRAPHY_NAME = 'tomo'
 SHRINK = 2  # half the resolution
+SHRINK = 1  # keep the resolution
 
 
 src_tomo = blosc2.open(SRC_TOMOGRAPHY_PATH)
