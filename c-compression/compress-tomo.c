@@ -103,6 +103,10 @@ int main(int argc, const char* argv[]) {
   blosc2_grok_params b2gk_params = {0};
   grk_compress_set_default_params(&(b2gk_params.compressParams));
   b2gk_params.compressParams.cod_format = GRK_FMT_JP2;
+  b2gk_params.compressParams.numlayers = 1;
+  b2gk_params.compressParams.allocationByRateDistoration = true;
+  b2gk_params.compressParams.layer_rate[0] = 10.0;  // tune
+  b2gk_params.compressParams.numThreads = 1;  // tune
   grk_set_default_stream_params(&(b2gk_params.streamParams));
 
   blosc2_cparams b2_cparams = BLOSC2_CPARAMS_DEFAULTS;
@@ -110,6 +114,7 @@ int main(int argc, const char* argv[]) {
   b2_cparams.typesize = dset_type_size;
   for (int i = 0; i < BLOSC2_MAX_FILTERS; i++)
     b2_cparams.filters[i] = 0;
+  b2_cparams.splitmode = BLOSC_NEVER_SPLIT;
   b2_cparams.codec_params = &b2gk_params;
   blosc2_dparams b2_dparams = BLOSC2_DPARAMS_DEFAULTS;
 
