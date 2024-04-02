@@ -172,7 +172,7 @@ int main(int argc, const char* argv[]) {
       FAIL(err_read_image);
     }
     herr_t status = H5Dwrite_chunk(dst_h5dset_id, H5P_DEFAULT, 0,
-                                   chunk_start, (size_t)(cframe_size), cframe);
+                                   chunk_offset, (size_t)(cframe_size), cframe);
     if (free_cframe)
       free(cframe);
     if (status < 0) {
