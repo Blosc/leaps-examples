@@ -1,3 +1,5 @@
+# Dependencies: Make, coreutils, Python 3, C compiler toolchain & libraries, HDF5 headers & libraries.
+
 PY_VENV := VENV
 PY := $(PY_VENV)/bin/python
 
