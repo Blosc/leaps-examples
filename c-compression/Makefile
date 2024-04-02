@@ -33,6 +33,7 @@ compress-tomo:	compress-tomo.c
 tomo.h5:	compress-tomo tomo-raw.h5
 	env LD_LIBRARY_PATH="$(PY_VENV)/lib:$(PY_SITE)/blosc2_grok:$(LD_LIBRARY_PATH)" \
 	    PATH="$(PY_VENV)/bin:$(PATH)" \
+	    BLOSC_TRACE=1 \
 	    ./$^ $@
 
 clean:
