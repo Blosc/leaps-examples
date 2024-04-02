@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <time.h>
 
 #include <blosc2.h>
 #include <blosc2/codecs-registry.h>
@@ -159,6 +160,9 @@ int main(int argc, const char* argv[]) {
     FAIL(err_make_b2arr);
   }
 
+  struct timespec start_ts;
+  clock_gettime(CLOCK_MONOTONIC, &start_ts);
+
   hsize_t chunk_offset[] = {0, 0, 0};
   const int64_t chunk_start[] = {0, 0, 0};
   for (int i = 0; i < dset_shape[0]; i++) {
@@ -197,6 +201,15 @@ int main(int argc, const char* argv[]) {
       FAIL(err_read_image);
     }
   }
+
+  struct timespec stop_ts;
+  clock_gettime(CLOCK_MONOTONIC, &stop_ts);
+
+  double elapsed = ((stop_ts.tv_sec - start_ts.tv_sec)
+                    + (stop_ts.tv_nsec - start_ts.tv_nsec) / 1e9);
+  printf("Compressed and stored %ld images of %ld bytes each in %f seconds total"
+         " (%f seconds/image).\n",
+         dset_shape[0], chunk_size, elapsed, elapsed / dset_shape[0]);
 
   //// Cleanup
 
