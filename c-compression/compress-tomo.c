@@ -19,7 +19,8 @@
 int main(int argc, const char* argv[]) {
   int status = EXIT_SUCCESS;
 
-  // Parse command-line arguments
+  //// Parse command-line arguments
+
   if (argc < 3) {
     fprintf(stderr, "Usage: %s INPUT_HDF5 OUTPUT_HDF5\n", argv[0]);
     FAIL(err_parse_args);
@@ -28,13 +29,14 @@ int main(int argc, const char* argv[]) {
   const char* src_h5file_path = argv[1];
   const char* dst_h5file_path = argv[2];
 
-  // Initialize libraries
+  //// Initialize libraries
+
   blosc2_init();
   blosc2_grok_init(0, true);
-
   printf("Blosc2 %s\n", blosc2_get_version_string());
 
-  // Open input dataset
+  //// Open input dataset
+
   hid_t src_h5file_id;
   CHKPOS(src_h5file_id = H5Fopen(src_h5file_path, H5F_ACC_RDONLY, H5P_DEFAULT),
          err_open_srcf);
@@ -46,6 +48,7 @@ int main(int argc, const char* argv[]) {
   hid_t src_h5dssp_id;
   CHKPOS(src_h5dssp_id = H5Dget_space(src_h5dset_id),
          err_open_srcdssp);
+
   int dset_rank;
   hsize_t dset_shape[H5S_MAX_RANK];
   CHKPOS(dset_rank = H5Sget_simple_extent_dims(src_h5dssp_id, dset_shape, NULL),
@@ -54,14 +57,17 @@ int main(int argc, const char* argv[]) {
     fprintf(stderr, "source tomography must have 3 dimensions, not %d\n", dset_rank);
     FAIL(err_check_srcdssp);
   }
+
   hid_t dset_h5type_id;
   CHKPOS(dset_h5type_id = H5Dget_type(src_h5dset_id),
          err_open_srcdsty);
 
-  // Create output dataset
+  //// Create output dataset
+
   hid_t dst_h5plst_id;
   CHKPOS(dst_h5plst_id = H5Pcreate(H5P_DATASET_CREATE),
          err_make_dstpl);
+
   hsize_t dst_chunk_shape[] = {1, dset_shape[1], dset_shape[2]};  // one 2D image per chunk
   CHKPOS(H5Pset_chunk(dst_h5plst_id, 3, dst_chunk_shape),
          err_conf_dstpl);
@@ -69,6 +75,7 @@ int main(int argc, const char* argv[]) {
   size_t dset_type_size = H5Tget_size(dset_h5type_id);
   size_t chunk_size = (dst_chunk_shape[0] * dst_chunk_shape[1] * dst_chunk_shape[2]
                        * dset_type_size);
+
   // These compression parameters for filter are mostly descriptive,
   // as the compression will be done manually.
   int cd_values[8 + 3] = {
@@ -99,7 +106,8 @@ int main(int argc, const char* argv[]) {
                                   "contenttype", "tomography"),
          err_c2attr_dstds);
 
-  // Prepare compression parameters for individual chunks
+  //// Prepare compression parameters for individual chunks
+
   blosc2_grok_params b2gk_params = {0};
   grk_compress_set_default_params(&(b2gk_params.compressParams));
   b2gk_params.compressParams.cod_format = GRK_FMT_JP2;
@@ -133,13 +141,15 @@ int main(int argc, const char* argv[]) {
     FAIL(err_make_b2ctx);
   }
 
-  // Read and write individual images
+  //// Read and write individual images
+
   uint8_t *chunk_data;
   chunk_data = malloc(chunk_size);
   if (!chunk_data) {
     fprintf(stderr, "failed to allocate chunk memory\n");
     FAIL(err_alloc_chunk);
   }
+
   hid_t mem_h5cksp_id;
   CHKPOS(mem_h5cksp_id = H5Screate_simple(dset_rank, dst_chunk_shape, NULL),
          err_make_memsp);
@@ -163,6 +173,7 @@ int main(int argc, const char* argv[]) {
       fprintf(stderr, "failed to read image #%d\n", i);
       FAIL(err_read_image);
     }
+
     if (b2nd_set_slice_cbuffer(chunk_data, dst_chunk_shape, chunk_size,
                                chunk_start, dst_chunk_shape,
                                chunk_b2arr) < 0) {
@@ -176,6 +187,7 @@ int main(int argc, const char* argv[]) {
       fprintf(stderr, "failed to serialize compressed image #%d\n", i);
       FAIL(err_read_image);
     }
+
     herr_t status = H5Dwrite_chunk(dst_h5dset_id, H5P_DEFAULT, 0,
                                    chunk_offset, (size_t)(cframe_size), cframe);
     if (free_cframe)
@@ -186,7 +198,8 @@ int main(int argc, const char* argv[]) {
     }
   }
 
-  // Cleanup
+  //// Cleanup
+
   err_read_image:
   b2nd_free(chunk_b2arr);
   err_make_b2arr:
