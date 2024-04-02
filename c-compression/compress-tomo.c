@@ -106,7 +106,6 @@ int main(int argc, const char* argv[]) {
     b2_cparams.filters[i] = 0;
   b2_cparams.codec_params = &b2gk_params;
   blosc2_dparams b2_dparams = BLOSC2_DPARAMS_DEFAULTS;
-  b2_dparams.nthreads = 1;
 
   blosc2_storage b2_storage = {.cparams = &b2_cparams, .dparams = &b2_dparams};
 
