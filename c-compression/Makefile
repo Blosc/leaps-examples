@@ -28,7 +28,7 @@ compress-tomo:	compress-tomo.c
 	      -I$(PY_SITE)/include -L$(PY_SITE)/blosc2_grok -lblosc2_grok \
 	      -I$(PY_VENV)/include -L$(PY_VENV)/lib -lblosc2 \
 	      -I$(wildcard $(PY_SITE)/include/grok-*) -L$(PY_SITE)/lib64 -lgrokj2k -lstdc++ \
-	      -lhdf5
+	      -lhdf5_hl -lhdf5
 
 # The environment's Python needs to be found first since
 # Blosc2 executes it to find the location of the plugin library.

@@ -5,6 +5,7 @@
 #include <blosc2_grok.h>
 #include <grok.h>
 #include <hdf5.h>
+#include <hdf5_hl.h>  // only for Caterva2 attribute
 
 #define TOMOGRAPHY_NAME "/tomo"
 
@@ -92,6 +93,11 @@ int main(int argc, const char* argv[]) {
   CHKPOS(dst_h5dset_id = H5Dcreate2(dst_h5file_id, TOMOGRAPHY_NAME, dset_h5type_id, dst_h5dssp_id,
                                     H5P_DEFAULT, dst_h5plst_id, H5P_DEFAULT),
          err_make_dstds);
+
+  // Only needed to get a nice display in Caterva2 web viewer
+  CHKPOS(H5LTset_attribute_string(dst_h5file_id, TOMOGRAPHY_NAME,
+                                  "contenttype", "tomography"),
+         err_c2attr_dstds);
 
   // Prepare compression parameters for individual chunks
   blosc2_grok_params b2gk_params = {0};
@@ -187,6 +193,7 @@ int main(int argc, const char* argv[]) {
   b2nd_free_ctx(chunk_b2ctx);
   err_make_b2ctx:
 
+  err_c2attr_dstds:
   H5Dclose(dst_h5dset_id);
   err_make_dstds:
   H5Fclose(dst_h5file_id);
