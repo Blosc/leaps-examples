@@ -1,5 +1,9 @@
 # Dependencies: Make, coreutils, Python 3, C compiler toolchain & libraries, HDF5 headers & libraries.
 
+# Customize these to enable access to non-system-wide libraries.
+#CFLAGS = -I/path/to/hdf5/include
+#LDFLAGS = -L/path/to/hdf5/lib
+
 PY_VENV := VENV
 PY := $(PY_VENV)/bin/python
 
@@ -28,7 +32,7 @@ compress-tomo:	compress-tomo.c
 	      -I$(PY_SITE)/include -L$(PY_SITE)/blosc2_grok -lblosc2_grok \
 	      -I$(PY_VENV)/include -L$(PY_VENV)/lib -lblosc2 \
 	      -I$(wildcard $(PY_SITE)/include/grok-*) -L$(PY_SITE)/lib64 -lgrokj2k -lstdc++ \
-	      -lhdf5_hl -lhdf5
+	      $(CFLAGS) $(LDFLAGS) -lhdf5_hl -lhdf5
 
 # The environment's Python needs to be found first since
 # Blosc2 executes it to find the location of the plugin library.
