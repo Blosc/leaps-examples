@@ -30,8 +30,8 @@ compress-tomo tomo.h5:	PY_SITE=$(dir $(shell $(PY) -c 'import blosc2; print(blos
 compress-tomo:	compress-tomo.c
 	$(CC) -o $@ $< \
 	      -I$(PY_SITE)/include -L$(PY_SITE)/blosc2_grok -lblosc2_grok \
-	      -I$(PY_VENV)/include -L$(PY_VENV)/lib -lblosc2 \
-	      -I$(wildcard $(PY_SITE)/include/grok-*) -L$(PY_SITE)/lib64 -lgrokj2k -lstdc++ \
+	      -I$(PY_VENV)/include -L$(PY_VENV)/lib -L$(PY_VENV)/lib64 -lblosc2 \
+	      -I$(wildcard $(PY_SITE)/include/grok-*) -L$(PY_SITE)/lib -L$(PY_SITE)/lib64 -lgrokj2k -lstdc++ \
 	      $(CFLAGS) $(LDFLAGS) -lhdf5_hl -lhdf5
 
 # The environment's Python needs to be found first since
