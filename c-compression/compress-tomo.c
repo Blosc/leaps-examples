@@ -109,6 +109,11 @@ int main(int argc, const char* argv[]) {
 
   //// Prepare compression parameters for individual chunks
 
+  // **Note:** The Pillow-like parameters allowed by `blosc2_grok.set_params_defaults` in Python
+  // are not available here, only the ones supported by Grok itself.  See the Grok header at
+  // <https://github.com/GrokImageCompression/grok/blob/a84ac2592e581405a976a00cf9e6f03cab7e2481/src/lib/core/grok.h#L975>
+  // for more information.
+
   blosc2_grok_params b2gk_params = {0};
   grk_compress_set_default_params(&(b2gk_params.compressParams));
   b2gk_params.compressParams.cod_format = GRK_FMT_JP2;
